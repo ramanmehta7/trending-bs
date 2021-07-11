@@ -2,7 +2,7 @@ const { spawn } = require("child_process");
 
 const fileName = "hello-world.py";
 exports.listVideos = (req, res, next) => {
-  const data = spawn("python", [fileName]);
+  const data = spawn("python3", [fileName]);
   data.stdout.on("data", data => {
     console.log(`stdout ${data}`);
   });
