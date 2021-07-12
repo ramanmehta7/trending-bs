@@ -2,8 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const routes = require("./routes/routes");
 
-const db = require('./config/mongoose')
-const Videos = require('./models/schema')
+const db = require("./config/mongoose");
+const Videos = require("./models/schema");
 
 const app = express();
 
@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 
 app.use("/", routes);
 
-const PORT = 8000;
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log("connected");
 });
