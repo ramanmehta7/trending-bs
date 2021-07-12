@@ -1,6 +1,3 @@
-# pip install -U selenium
-# https://www.geeksforgeeks.org/how-to-install-selenium-in-python/
-# pip install pymongo[srv]
 import pymongo
 from pymongo import MongoClient
 
@@ -26,9 +23,6 @@ for tag in tag_list:
     for anchor_tag in title_anchor_tag:
         video_title.append(anchor_tag.text)
         video_url.append(anchor_tag.get_attribute('href'))
-    
-#     for img_tag in thumbnail_img_tag:
-#         thumbnail_url.append(img_tag.get_attribute('src'))
 
 view_count_list = []
 subscribers_count_list = []
@@ -43,11 +37,17 @@ for i in range(len(video_url)):
     driver.get(url)
 
     wait = WebDriverWait(driver, 30)
-    title2 = wait.until(expected_conditions.element_to_be_clickable(
-        (By.CSS_SELECTOR, 'h1.ytd-video-primary-info-renderer yt-formatted-string')))
+    try:
+        title2 = wait.until(expected_conditions.element_to_be_clickable(
+            (By.CSS_SELECTOR, 'h1.ytd-video-primary-info-renderer yt-formatted-string')))
+    except:
+        pass
 
-    video_views_count = wait.until(expected_conditions.element_to_be_clickable(
-        (By.CSS_SELECTOR, '#count > ytd-video-view-count-renderer > span.view-count.style-scope.ytd-video-view-count-renderer')))
+    try:
+        video_views_count = wait.until(expected_conditions.element_to_be_clickable(
+            (By.CSS_SELECTOR, '#count > ytd-video-view-count-renderer > span.view-count.style-scope.ytd-video-view-count-renderer')))
+    except:
+        pass
 
     channel_data = driver.find_elements_by_css_selector(
         'ytd-video-secondary-info-renderer ytd-video-owner-renderer yt-formatted-string')
@@ -64,17 +64,27 @@ for i in range(len(video_url)):
         show_more_btn.click()
     except:
         pass
-    description = driver.find_element_by_css_selector('#description > yt-formatted-string')
-    
-    channel_name_list.append(channel_data[0].text)
-    subscribers_count_list.append(channel_data[1].text)
-    channel_thumbnails.append(channel_thumbnail[0].get_attribute('src'))
+
+    description = driver.find_element_by_css_selector(
+        '#description > yt-formatted-string')
+
+    if len(channel_data) > 1:
+        channel_name_list.append(channel_data[0].text)
+        subscribers_count_list.append(channel_data[1].text)
+    if len(channel_thumbnail) > 0:
+        channel_thumbnails.append(channel_thumbnail[0].get_attribute('src'))
+
     view_count_list.append(video_views_count.text)
-    likes_list.append(video_data[0].text)
-    dislikes_list.append(video_data[1].text)
+
+    if len(video_data) > 1:
+        likes_list.append(video_data[0].text)
+        dislikes_list.append(video_data[1].text)
+
     video_description_list.append(description.text)
 
-cluster = MongoClient('mongodb+srv://localhost80:pass1234@cluster0.5w2ht.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+# MongoDB
+cluster = MongoClient(
+    'mongodb+srv://localhost80:pass1234@cluster0.5w2ht.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 db = cluster["trending"]
 collection = db["videos"]
 
@@ -91,8 +101,13 @@ for i in range(len(video_url)):
     videos["dislikes"] = dislikes_list[i]
     videos["description"] = video_description_list[i]
     videos["channel_thumbnail"] = channel_thumbnails[i]
-    # videos["thumbnail_url"] = thumbnail_url[i]
     videos_list.append(videos)
 
+
+# MongoDB update database
+# Here we have deleted all the documents and inserted the previous documents
+# If we try to update the documents, then that would be just an overhead for processing, because we actually
+# only want the recent videos to be populated in the database which we actually have,
+# so its better to insert them instead of updating them.
 collection.delete_many({})
 collection.insert_many(videos_list)
