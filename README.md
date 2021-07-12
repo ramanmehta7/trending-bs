@@ -8,5 +8,12 @@ https://www.geeksforgeeks.org/how-to-install-selenium-in-python/
 pip install pymongo[srv]
 
 
+MongoDB update database
+Here we have deleted all the documents and inserted the previous documents
+If we try to update the documents, then that would be just an overhead for processing, because we actually
+only want the recent videos to be populated in the database which we actually have,
+so its better to insert them instead of updating them.
+
+
 To run:
   run -> npm start and the server will be up and running
